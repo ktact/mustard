@@ -2,6 +2,7 @@
 #![no_main]
 #![feature(offset_of)]
 
+use core::arch::asm;
 use core::mem::offset_of;
 use core::mem::size_of;
 use core::panic::PanicInfo;
@@ -97,6 +98,10 @@ fn locate_graphics_protocol<'a>(
     Ok(unsafe { &*graphic_output_protocol })
 }
 
+pub fn hlt() {
+    unsafe { asm!("hlt") }
+}
+
 #[no_mangle]
 fn efi_main(_image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
     let efi_graphics_output_protocol = locate_graphics_protocol(efi_system_table).unwrap();
@@ -111,10 +116,15 @@ fn efi_main(_image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
     for e in vram {
         *e = 0xffffff;
     }
-    loop {}
+    loop {
+        hlt()
+    }
 }
+
 
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
-    loop {}
+    loop {
+        hlt()
+    }
 }
