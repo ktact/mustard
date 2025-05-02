@@ -9,6 +9,7 @@ use mustard::graphics::fill_rect;
 use mustard::graphics::Bitmap;
 use mustard::qemu::exit_qemu;
 use mustard::qemu::QemuExitCode;
+use mustard::serial::SerialPort;
 use mustard::uefi::exit_from_efi_boot_services;
 use mustard::uefi::init_vram;
 use mustard::uefi::EfiHandle;
@@ -21,6 +22,8 @@ use mustard::x86::hlt;
 
 #[no_mangle]
 fn efi_main(image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
+    let mut sw = SerialPort::new_for_com1();
+    writeln!(sw, "Hello via serial port").unwrap();
     let mut vram = init_vram(efi_system_table).expect("init_vram failed");
     let vw = vram.width();
     let vh = vram.height();
