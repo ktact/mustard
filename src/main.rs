@@ -8,9 +8,9 @@ use mustard::graphics::draw_test_pattern;
 use mustard::graphics::fill_rect;
 use mustard::graphics::Bitmap;
 use mustard::init::init_basic_runtime;
+use mustard::println;
 use mustard::qemu::exit_qemu;
 use mustard::qemu::QemuExitCode;
-use mustard::serial::SerialPort;
 use mustard::uefi::init_vram;
 use mustard::uefi::EfiHandle;
 use mustard::uefi::EfiMemoryType;
@@ -21,8 +21,9 @@ use mustard::x86::hlt;
 
 #[no_mangle]
 fn efi_main(image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
-    let mut sw = SerialPort::new_for_com1();
-    writeln!(sw, "Hello via serial port").unwrap();
+    println!("Booting MustardOS...");
+    println!("image_handle: {:#018X}", image_handle);
+    println!("efi_system_table: {:p}", efi_system_table);
     let mut vram = init_vram(efi_system_table).expect("init_vram failed");
     let vw = vram.width();
     let vh = vram.height();
