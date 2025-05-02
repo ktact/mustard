@@ -2,12 +2,13 @@
 #![no_main]
 #![feature(offset_of)]
 
-use core::arch::asm;
 use core::fmt::Write;
 use core::panic::PanicInfo;
 use mustard::graphics::draw_test_pattern;
 use mustard::graphics::fill_rect;
 use mustard::graphics::Bitmap;
+use mustard::qemu::exit_qemu;
+use mustard::qemu::QemuExitCode;
 use mustard::uefi::exit_from_efi_boot_services;
 use mustard::uefi::init_vram;
 use mustard::uefi::EfiHandle;
@@ -16,9 +17,7 @@ use mustard::uefi::EfiSystemTable;
 use mustard::uefi::MemoryMapHolder;
 use mustard::uefi::VramTextWriter;
 
-pub fn hlt() {
-    unsafe { asm!("hlt") }
-}
+use mustard::x86::hlt;
 
 #[no_mangle]
 fn efi_main(image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
@@ -60,7 +59,5 @@ fn efi_main(image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
 
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
-    loop {
-        hlt()
-    }
+    exit_qemu(QemuExitCode::Fail);
 }
