@@ -240,7 +240,9 @@ mod test {
         let mut pointers = [null_mut::<u8>(); 100];
         for align in [1, 2, 4, 8, 16, 32, 4096] {
             for e in pointers.iter_mut() {
-                *e = ALLOCATOR.alloc_with_options(Layout::from_size_align(1234, align).expect("Failed to create Layout"));
+                *e = ALLOCATOR.alloc_with_options(
+                    Layout::from_size_align(1234, align).expect("Failed to create Layout"),
+                );
                 assert!(*e as usize != 0);
                 assert!((*e as usize) % align == 0);
             }
@@ -252,7 +254,9 @@ mod test {
         for align in [32, 4096, 8, 4, 16, 2, 1] {
             let mut pointers = [null_mut::<u8>(); 100];
             for e in pointers.iter_mut() {
-                *e = ALLOCATOR.alloc_with_options(Layout::from_size_align(1234, align).expect("Failed to create Layout"));
+                *e = ALLOCATOR.alloc_with_options(
+                    Layout::from_size_align(1234, align).expect("Failed to create Layout"),
+                );
                 assert!(*e as usize != 0);
                 assert!((*e as usize) % align == 0);
             }
@@ -311,17 +315,33 @@ mod test {
                 assert!(unsafe { *pointer.add(k) } == i as u8);
             }
         }
-        for e in allocations.iter().zip(pointers.iter_mut()).enumerate().step_by(2) {
+        for e in allocations
+            .iter()
+            .zip(pointers.iter_mut())
+            .enumerate()
+            .step_by(2)
+        {
             let (_, (layout, pointer)) = e;
             unsafe { ALLOCATOR.dealloc(*pointer, *layout) }
         }
-        for e in allocations.iter().zip(pointers.iter_mut()).enumerate().skip(1).step_by(2) {
+        for e in allocations
+            .iter()
+            .zip(pointers.iter_mut())
+            .enumerate()
+            .skip(1)
+            .step_by(2)
+        {
             let (i, (layout, pointer)) = e;
             for k in 0..layout.size() {
                 assert!(unsafe { *pointer.add(k) } == i as u8);
             }
         }
-        for e in allocations.iter().zip(pointers.iter_mut()).enumerate().step_by(2) {
+        for e in allocations
+            .iter()
+            .zip(pointers.iter_mut())
+            .enumerate()
+            .step_by(2)
+        {
             let (i, (layout, pointer)) = e;
             *pointer = ALLOCATOR.alloc_with_options(*layout);
             for k in 0..layout.size() {
