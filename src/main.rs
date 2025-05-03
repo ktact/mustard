@@ -4,9 +4,11 @@
 
 use core::fmt::Write;
 use core::panic::PanicInfo;
+use mustard::error;
 use mustard::graphics::draw_test_pattern;
 use mustard::graphics::fill_rect;
 use mustard::graphics::Bitmap;
+use mustard::info;
 use mustard::init::init_basic_runtime;
 use mustard::println;
 use mustard::qemu::exit_qemu;
@@ -16,7 +18,7 @@ use mustard::uefi::EfiHandle;
 use mustard::uefi::EfiMemoryType;
 use mustard::uefi::EfiSystemTable;
 use mustard::uefi::VramTextWriter;
-
+use mustard::warn;
 use mustard::x86::hlt;
 
 #[no_mangle]
@@ -24,6 +26,9 @@ fn efi_main(image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
     println!("Booting MustardOS...");
     println!("image_handle: {:#018X}", image_handle);
     println!("efi_system_table: {:p}", efi_system_table);
+    info!("info");
+    warn!("warn");
+    error!("error");
     let mut vram = init_vram(efi_system_table).expect("init_vram failed");
     let vw = vram.width();
     let vh = vram.height();
@@ -53,6 +58,7 @@ fn efi_main(image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
 }
 
 #[panic_handler]
-fn panic(_info: &PanicInfo) -> ! {
+fn panic(info: &PanicInfo) -> ! {
+    error!("PANIC: {info:?}");
     exit_qemu(QemuExitCode::Fail);
 }
