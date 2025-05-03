@@ -10,6 +10,7 @@ use mustard::graphics::fill_rect;
 use mustard::graphics::Bitmap;
 use mustard::info;
 use mustard::init::init_basic_runtime;
+use mustard::print::hexdump;
 use mustard::println;
 use mustard::qemu::exit_qemu;
 use mustard::qemu::QemuExitCode;
@@ -29,6 +30,7 @@ fn efi_main(image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
     info!("info");
     warn!("warn");
     error!("error");
+    hexdump(efi_system_table);
     let mut vram = init_vram(efi_system_table).expect("init_vram failed");
     let vw = vram.width();
     let vh = vram.height();
