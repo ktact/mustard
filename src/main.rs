@@ -15,18 +15,25 @@ use mustard::println;
 use mustard::qemu::exit_qemu;
 use mustard::qemu::QemuExitCode;
 use mustard::uefi::init_vram;
+use mustard::uefi::locate_loaded_image_protocol;
 use mustard::uefi::EfiHandle;
 use mustard::uefi::EfiMemoryType;
 use mustard::uefi::EfiSystemTable;
 use mustard::uefi::VramTextWriter;
 use mustard::warn;
 use mustard::x86::hlt;
+use mustard::x86::init_exceptions;
+use mustard::x86::trigger_debug_interrupt;
 
 #[no_mangle]
 fn efi_main(image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
     println!("Booting MustardOS...");
     println!("image_handle: {:#018X}", image_handle);
     println!("efi_system_table: {:p}", efi_system_table);
+    let loaded_image_protocol = locate_loaded_image_protocol(image_handle, efi_system_table)
+        .expect("Failed to get LoadedImageProtocol");
+    println!("image_base: {:#018X}", loaded_image_protocol.image_base);
+    println!("image_size: {:#018X}", loaded_image_protocol.image_size);
     info!("info");
     warn!("warn");
     error!("error");
@@ -63,6 +70,10 @@ fn efi_main(image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
     println!("{t:?}");
     let t = t.and_then(|t| t.next_level(0));
     println!("{t:?}");
+
+    let (_gdt, _idt) = init_exceptions();
+    info!("Exception initialized!");
+    trigger_debug_interrupt();
 
     loop {
         hlt()
