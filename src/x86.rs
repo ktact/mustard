@@ -452,6 +452,7 @@ extern "sysv64" fn inthandler(info: &InterruptInfo, index: usize) {
     match index {
         3 => {
             error!("Breakpoint");
+            return;
         }
         6 => {
             error!("Invalid Opcode");
