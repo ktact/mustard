@@ -10,6 +10,7 @@ use mustard::graphics::fill_rect;
 use mustard::graphics::Bitmap;
 use mustard::info;
 use mustard::init::init_basic_runtime;
+use mustard::init::init_paging;
 use mustard::print::hexdump;
 use mustard::println;
 use mustard::qemu::exit_qemu;
@@ -75,6 +76,8 @@ fn efi_main(image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
     info!("Exception initialized!");
     trigger_debug_interrupt();
     info!("Execution continued.");
+    init_paging(&memory_map);
+    info!("Now we are using our own page tables!");
 
     loop {
         hlt()
