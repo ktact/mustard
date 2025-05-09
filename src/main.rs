@@ -5,6 +5,7 @@
 use core::fmt::Write;
 use core::panic::PanicInfo;
 use mustard::error;
+use mustard::executor::block_on;
 use mustard::graphics::draw_test_pattern;
 use mustard::graphics::fill_rect;
 use mustard::graphics::Bitmap;
@@ -89,6 +90,12 @@ fn efi_main(image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
             .expect("Failed to unmap page 0");
     }
     flush_tlb();
+
+    let result = block_on(async {
+        info!("Hello from the async world!");
+        Ok(())
+    });
+    info!("block_on completed! result = {result:?}");
 
     loop {
         hlt()
