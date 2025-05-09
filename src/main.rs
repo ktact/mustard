@@ -5,7 +5,8 @@
 use core::fmt::Write;
 use core::panic::PanicInfo;
 use mustard::error;
-use mustard::executor::block_on;
+use mustard::executor::Executor;
+use mustard::executor::Task;
 use mustard::graphics::draw_test_pattern;
 use mustard::graphics::fill_rect;
 use mustard::graphics::Bitmap;
@@ -24,7 +25,6 @@ use mustard::uefi::EfiSystemTable;
 use mustard::uefi::VramTextWriter;
 use mustard::warn;
 use mustard::x86::flush_tlb;
-use mustard::x86::hlt;
 use mustard::x86::init_exceptions;
 use mustard::x86::read_cr3;
 use mustard::x86::trigger_debug_interrupt;
@@ -91,15 +91,14 @@ fn efi_main(image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
     }
     flush_tlb();
 
-    let result = block_on(async {
+    let task = Task::new(async {
         info!("Hello from the async world!");
         Ok(())
     });
-    info!("block_on completed! result = {result:?}");
 
-    loop {
-        hlt()
-    }
+    let mut executor = Executor::new();
+    executor.enqueue(task);
+    Executor::run(executor);
 }
 
 #[panic_handler]
