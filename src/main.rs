@@ -5,6 +5,7 @@
 use core::fmt::Write;
 use core::panic::PanicInfo;
 use mustard::error;
+use mustard::executor::yield_execution;
 use mustard::executor::Executor;
 use mustard::executor::Task;
 use mustard::graphics::draw_test_pattern;
@@ -91,13 +92,24 @@ fn efi_main(image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
     }
     flush_tlb();
 
-    let task = Task::new(async {
-        info!("Hello from the async world!");
+    let task1 = Task::new(async {
+        for i in 100..=103 {
+            info!("{i}");
+            yield_execution().await;
+        }
+        Ok(())
+    });
+    let task2 = Task::new(async {
+        for i in 200..=203 {
+            info!("{i}");
+            yield_execution().await;
+        }
         Ok(())
     });
 
     let mut executor = Executor::new();
-    executor.enqueue(task);
+    executor.enqueue(task1);
+    executor.enqueue(task2);
     Executor::run(executor);
 }
 
