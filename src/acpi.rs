@@ -1,3 +1,4 @@
+use crate::hpet::HpetRegisters;
 use crate::result::Result;
 use core::mem::size_of;
 
@@ -39,7 +40,9 @@ impl<'a> Iterator for XsdtIterator<'a> {
             None
         } else {
             self.index += 1;
-            Some(unsafe { &*(self.table.entry(self.index - 1) as *const SystemDescriptionTableHeader) })
+            Some(unsafe {
+                &*(self.table.entry(self.index - 1) as *const SystemDescriptionTableHeader)
+            })
         }
     }
 }
@@ -61,7 +64,9 @@ impl Xsdt {
         (self.header.length as usize - self.header_size()) / size_of::<*const u8>()
     }
     unsafe fn entry(&self, index: usize) -> *const u8 {
-        ((self as *const Self as *const u8).add(self.header_size()) as *const *const u8).add(index).read_unaligned()
+        ((self as *const Self as *const u8).add(self.header_size()) as *const *const u8)
+            .add(index)
+            .read_unaligned()
     }
     fn iter(&self) -> XsdtIterator {
         XsdtIterator::new(self)
@@ -74,7 +79,8 @@ trait AcpiTable {
     fn new(header: &SystemDescriptionTableHeader) -> &Self::Table {
         header.expect_signature(Self::SIGNATURE);
         // This is safe as far as phys_addr points to a valid MCFG table and it alives forever.
-        let mcfg: &Self::Table = unsafe { &*(header as *const SystemDescriptionTableHeader as *const Self::Table) };
+        let mcfg: &Self::Table =
+            unsafe { &*(header as *const SystemDescriptionTableHeader as *const Self::Table) };
         mcfg
     }
 }
@@ -107,8 +113,12 @@ impl AcpiTable for AcpiHpetDescriptor {
     type Table = Self;
 }
 impl AcpiHpetDescriptor {
-    pub fn base_address(&self) -> Result<usize> {
-        self.address.address_in_memory_space()
+    pub fn base_address(&self) -> Result<&'static mut HpetRegisters> {
+        unsafe {
+            self.address
+                .address_in_memory_space()
+                .map(|addr| &mut *(addr as *mut HpetRegisters))
+        }
     }
 }
 const _: () = assert!(size_of::<AcpiHpetDescriptor>() == 56);

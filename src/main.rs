@@ -11,6 +11,7 @@ use mustard::executor::Task;
 use mustard::graphics::draw_test_pattern;
 use mustard::graphics::fill_rect;
 use mustard::graphics::Bitmap;
+use mustard::hpet::Hpet;
 use mustard::info;
 use mustard::init::init_basic_runtime;
 use mustard::init::init_paging;
@@ -94,11 +95,14 @@ fn efi_main(image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
     flush_tlb();
 
     let hpet = acpi.hpet().expect("Failed to get HPET from ACPI");
-    let hpet = hpet.base_address().expect("Failed to get HPET base address");
-    info!("HPET is at {hpet:#018X}");
-    let task1 = Task::new(async {
+    let hpet = hpet
+        .base_address()
+        .expect("Failed to get HPET base address");
+    info!("HPET is at {hpet:#p}");
+    let hpet = Hpet::new(hpet);
+    let task1 = Task::new(async move {
         for i in 100..=103 {
-            info!("{i}");
+            info!("{i} hpet.main_counter = {}", hpet.main_counter());
             yield_execution().await;
         }
         Ok(())

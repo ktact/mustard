@@ -206,7 +206,8 @@ impl EfiSystemTable {
         None
     }
     pub fn acpi_table(&self) -> Option<&'static AcpiRsdpStruct> {
-        self.lookup_config_table(&EFI_ACPI_TABLE_GUID).map(|t| unsafe { &*(t.vendor_table as *const AcpiRsdpStruct) })
+        self.lookup_config_table(&EFI_ACPI_TABLE_GUID)
+            .map(|t| unsafe { &*(t.vendor_table as *const AcpiRsdpStruct) })
     }
 }
 
