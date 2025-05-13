@@ -4,10 +4,11 @@
 
 use core::fmt::Write;
 use core::panic::PanicInfo;
+use core::time::Duration;
 use mustard::error;
-use mustard::executor::yield_execution;
 use mustard::executor::Executor;
 use mustard::executor::Task;
+use mustard::executor::TimeoutFuture;
 use mustard::graphics::draw_test_pattern;
 use mustard::graphics::fill_rect;
 use mustard::graphics::Bitmap;
@@ -107,14 +108,14 @@ fn efi_main(image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
     let task1 = Task::new(async move {
         for i in 100..=103 {
             info!("{i} hpet.main_counter = {:?}", global_timestamp() - t0);
-            yield_execution().await;
+            TimeoutFuture::new(Duration::from_secs(1)).await;
         }
         Ok(())
     });
     let task2 = Task::new(async move {
         for i in 200..=203 {
             info!("{i} hpet.main_counter = {:?}", global_timestamp() - t0);
-            yield_execution().await;
+            TimeoutFuture::new(Duration::from_secs(2)).await;
         }
         Ok(())
     });
