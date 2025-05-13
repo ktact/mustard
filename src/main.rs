@@ -11,6 +11,8 @@ use mustard::executor::Task;
 use mustard::graphics::draw_test_pattern;
 use mustard::graphics::fill_rect;
 use mustard::graphics::Bitmap;
+use mustard::hpet::global_timestamp;
+use mustard::hpet::set_global_hpet;
 use mustard::hpet::Hpet;
 use mustard::info;
 use mustard::init::init_basic_runtime;
@@ -100,16 +102,18 @@ fn efi_main(image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
         .expect("Failed to get HPET base address");
     info!("HPET is at {hpet:#p}");
     let hpet = Hpet::new(hpet);
+    set_global_hpet(hpet);
+    let t0 = global_timestamp();
     let task1 = Task::new(async move {
         for i in 100..=103 {
-            info!("{i} hpet.main_counter = {}", hpet.main_counter());
+            info!("{i} hpet.main_counter = {:?}", global_timestamp() - t0);
             yield_execution().await;
         }
         Ok(())
     });
-    let task2 = Task::new(async {
+    let task2 = Task::new(async move {
         for i in 200..=203 {
-            info!("{i}");
+            info!("{i} hpet.main_counter = {:?}", global_timestamp() - t0);
             yield_execution().await;
         }
         Ok(())
