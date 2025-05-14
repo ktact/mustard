@@ -2,14 +2,12 @@
 #![no_main]
 #![feature(offset_of)]
 
-use core::fmt::Write;
 use core::panic::PanicInfo;
 use core::time::Duration;
 use mustard::error;
 use mustard::executor::Executor;
 use mustard::executor::Task;
 use mustard::executor::TimeoutFuture;
-use mustard::graphics::BitmapTextWriter;
 use mustard::hpet::global_timestamp;
 use mustard::info;
 use mustard::init::init_allocator;
@@ -18,6 +16,7 @@ use mustard::init::init_display;
 use mustard::init::init_hpet;
 use mustard::init::init_paging;
 use mustard::print::hexdump;
+use mustard::print::set_global_vram;
 use mustard::println;
 use mustard::qemu::exit_qemu;
 use mustard::qemu::QemuExitCode;
@@ -43,10 +42,9 @@ fn efi_main(image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
     hexdump(efi_system_table);
     let mut vram = init_vram(efi_system_table).expect("init_vram failed");
     init_display(&mut vram);
-    let mut w = BitmapTextWriter::new(&mut vram);
+    set_global_vram(vram);
     let acpi = efi_system_table.acpi_table().expect("ACPI table not found");
     let memory_map = init_basic_runtime(image_handle, efi_system_table);
-    writeln!(w, "Hello, Non-UEFI world!").unwrap();
     init_allocator(&memory_map);
     let (_gdt, _idt) = init_exceptions();
     init_paging(&memory_map);
