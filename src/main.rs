@@ -9,6 +9,7 @@ use mustard::error;
 use mustard::executor::Executor;
 use mustard::executor::Task;
 use mustard::executor::TimeoutFuture;
+use mustard::graphics::BitmapTextWriter;
 use mustard::hpet::global_timestamp;
 use mustard::info;
 use mustard::init::init_allocator;
@@ -24,7 +25,6 @@ use mustard::uefi::init_vram;
 use mustard::uefi::locate_loaded_image_protocol;
 use mustard::uefi::EfiHandle;
 use mustard::uefi::EfiSystemTable;
-use mustard::uefi::VramTextWriter;
 use mustard::warn;
 use mustard::x86::init_exceptions;
 
@@ -43,7 +43,7 @@ fn efi_main(image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
     hexdump(efi_system_table);
     let mut vram = init_vram(efi_system_table).expect("init_vram failed");
     init_display(&mut vram);
-    let mut w = VramTextWriter::new(&mut vram);
+    let mut w = BitmapTextWriter::new(&mut vram);
     let acpi = efi_system_table.acpi_table().expect("ACPI table not found");
     let memory_map = init_basic_runtime(image_handle, efi_system_table);
     writeln!(w, "Hello, Non-UEFI world!").unwrap();
