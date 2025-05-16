@@ -15,6 +15,7 @@ use mustard::init::init_basic_runtime;
 use mustard::init::init_display;
 use mustard::init::init_hpet;
 use mustard::init::init_paging;
+use mustard::init::init_pci;
 use mustard::print::hexdump;
 use mustard::print::set_global_vram;
 use mustard::println;
@@ -50,6 +51,7 @@ fn efi_main(image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
     let (_gdt, _idt) = init_exceptions();
     init_paging(&memory_map);
     init_hpet(acpi);
+    init_pci(acpi);
     let t0 = global_timestamp();
     let task1 = Task::new(async move {
         for i in 100..=103 {
